@@ -170,6 +170,58 @@
     #toast.error   { background:#c0392b; color:white; }
     #toast.show    { transform:translateY(0); opacity:1; }
 
+    /* ── MEAL PERIOD CONTROL ── */
+    .meal-period-control {
+      background: var(--card);
+      border: 1px solid var(--border);
+      padding: 20px 24px;
+      margin-bottom: 28px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+    .meal-period-label {
+      font-size: .55rem;
+      letter-spacing: .3em;
+      text-transform: uppercase;
+      color: var(--muted);
+      flex-shrink: 0;
+    }
+    .meal-toggle-admin {
+      display: flex;
+      align-items: center;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border);
+      overflow: hidden;
+    }
+    .meal-btn-admin {
+      background: transparent;
+      border: none;
+      color: var(--muted);
+      font-family: 'Montserrat', sans-serif;
+      font-size: .6rem;
+      letter-spacing: .25em;
+      text-transform: uppercase;
+      padding: 10px 22px;
+      cursor: pointer;
+      transition: all .25s;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+    .meal-btn-admin.active-lunch { background: rgba(201,168,76,0.15); color: var(--gold); }
+    .meal-btn-admin.active-dinner { background: rgba(139,0,0,0.35); color: var(--cream); }
+    .meal-divider-admin { width:1px; height:34px; background: var(--border); }
+    .meal-period-hint {
+      font-size: .55rem;
+      letter-spacing: .15em;
+      color: var(--muted);
+      font-style: italic;
+      margin-left: auto;
+    }
+    .meal-period-hint strong { color: var(--gold); font-style: normal; }
+
     @media(max-width:640px){
       .item-row { grid-template-columns:1fr 1fr; }
       .item-row input:nth-child(2) { grid-column:1 / -1; }
@@ -211,6 +263,22 @@
   </div>
   <div class="admin-content">
     <p class="page-title">Today's Menu — <span id="adminDate"></span></p>
+
+    <!-- MEAL PERIOD TOGGLE -->
+    <div class="meal-period-control">
+      <span class="meal-period-label">Service Period</span>
+      <div class="meal-toggle-admin">
+        <button class="meal-btn-admin active-lunch" id="adminLunchBtn" onclick="adminSetMeal('lunch')">
+          ☀️ Lunch &nbsp;<small style="opacity:.6">12:00–15:00</small>
+        </button>
+        <div class="meal-divider-admin"></div>
+        <button class="meal-btn-admin" id="adminDinnerBtn" onclick="adminSetMeal('dinner')">
+          🌙 Dinner &nbsp;<small style="opacity:.6">18:00–22:00</small>
+        </button>
+      </div>
+      <span class="meal-period-hint">Guests will see <strong id="mealPeriodHintText">Lunch</strong> displayed on their menu</span>
+    </div>
+
     <div class="section-tabs" id="sectionTabs"></div>
     <div id="editorArea"></div>
   </div>
@@ -244,6 +312,18 @@
 
   let menuData = {};
   let activeSection = '';
+  let currentMealPeriod = 'lunch';
+
+  // ── MEAL PERIOD ADMIN TOGGLE ─────────────────────────────────────────
+  window.adminSetMeal = function(period) {
+    currentMealPeriod = period;
+    const lBtn = document.getElementById('adminLunchBtn');
+    const dBtn = document.getElementById('adminDinnerBtn');
+    const hint = document.getElementById('mealPeriodHintText');
+    lBtn.className = 'meal-btn-admin' + (period === 'lunch' ? ' active-lunch' : '');
+    dBtn.className = 'meal-btn-admin' + (period === 'dinner' ? ' active-dinner' : '');
+    if (hint) hint.textContent = period === 'lunch' ? 'Lunch' : 'Dinner';
+  };
 
   // ── AUTH ────────────────────────────────────────────────────────────
   window.doLogin = async function() {
@@ -276,6 +356,9 @@
     try {
       const snap = await getDoc(doc(db, 'menu', 'current'));
       menuData = snap.exists() ? snap.data().sections : getDefaultMenu();
+      if (snap.exists() && snap.data().mealPeriod) {
+        window.adminSetMeal(snap.data().mealPeriod);
+      }
     } catch(e) {
       console.error(e);
       menuData = getDefaultMenu();
@@ -295,6 +378,7 @@
     try {
       await setDoc(doc(db, 'menu', 'current'), {
         sections: menuData,
+        mealPeriod: currentMealPeriod,
         updatedAt: new Date().toISOString()
       });
       showToast('✓ Menu saved — customers see it now', 'success');
