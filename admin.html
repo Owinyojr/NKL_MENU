@@ -1,0 +1,1286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Redcliff — Chef Admin Panel</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Cormorant+Garamond:wght@300;400;500&family=Montserrat:wght@300;400;600&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --crimson: #8B0000;
+      --crimson-light: #b30000;
+      --gold: #C9A84C;
+      --gold-dim: rgba(201,168,76,0.15);
+      --deep: #1a0a0a;
+      --panel: #221010;
+      --card: #2a1212;
+      --cream: #F9F3E8;
+      --muted: #7a6a5a;
+      --border: rgba(201,168,76,0.25);
+      --border-bright: rgba(201,168,76,0.5);
+      --success: #2e7d32;
+      --danger: #8B0000;
+      --warn: #b8860b;
+      --hidden-overlay: rgba(139,0,0,0.08);
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+
+    body {
+      background: var(--deep);
+      color: var(--cream);
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      min-height: 100vh;
+    }
+
+    /* ── HERO ── */
+    .hero {
+      position: relative;
+      text-align: center;
+      padding: 50px 20px 40px;
+      border-bottom: 1px solid var(--border);
+      overflow: hidden;
+    }
+    .hero::before {
+      content:'';
+      position:absolute;
+      inset:0;
+      background:
+        radial-gradient(ellipse 60% 50% at 50% 0%, rgba(139,0,0,0.3) 0%, transparent 70%),
+        url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23C9A84C' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/svg%3E");
+      pointer-events:none;
+    }
+    .admin-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(139,0,0,0.3);
+      border: 1px solid rgba(139,0,0,0.5);
+      padding: 5px 16px;
+      font-family: 'Montserrat', sans-serif;
+      font-size: .55rem;
+      letter-spacing: .35em;
+      text-transform: uppercase;
+      color: #e8a0a0;
+      margin-bottom: 16px;
+    }
+    .admin-badge .dot { width:6px; height:6px; border-radius:50%; background:#e8a0a0; animation:pulse 2s ease-in-out infinite; }
+    h1.restaurant-name {
+      font-family:'Playfair Display',serif;
+      font-size:clamp(2.5rem,6vw,4.5rem);
+      font-weight:700; letter-spacing:.12em; color:var(--cream); line-height:1;
+    }
+    .tagline {
+      font-family:'Montserrat',sans-serif; font-size:.65rem;
+      letter-spacing:.35em; text-transform:uppercase; color:var(--gold);
+      margin-top:10px;
+    }
+    #adminUser {
+      font-family:'Montserrat',sans-serif; font-size:.6rem;
+      letter-spacing:.2em; text-transform:uppercase; color:var(--muted);
+      margin-top:14px;
+    }
+
+    /* ── TABS ── */
+    .tabs-bar {
+      display: flex;
+      justify-content: center;
+      gap: 0;
+      border-bottom: 1px solid var(--border);
+      background: var(--panel);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .tab-btn {
+      background: transparent;
+      border: none;
+      border-bottom: 2px solid transparent;
+      color: var(--muted);
+      font-family: 'Montserrat', sans-serif;
+      font-size: .58rem;
+      letter-spacing: .28em;
+      text-transform: uppercase;
+      padding: 18px 28px;
+      cursor: pointer;
+      transition: all .25s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .tab-btn:hover { color: var(--cream); }
+    .tab-btn.active { color: var(--gold); border-bottom-color: var(--gold); }
+    .tab-btn svg { width:14px; height:14px; fill:currentColor; }
+
+    /* ── LAYOUT ── */
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+    .admin-wrap { max-width: 1100px; margin: 0 auto; padding: 40px 20px 100px; }
+
+    /* ── STATUS BAR ── */
+    .status-bar {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 36px;
+      padding: 18px 24px;
+      background: var(--card);
+      border: 1px solid var(--border);
+    }
+    .status-label {
+      font-family: 'Montserrat', sans-serif;
+      font-size: .55rem;
+      letter-spacing: .25em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-right: 4px;
+    }
+    .meal-toggle {
+      display:flex; align-items:center;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      overflow: hidden;
+    }
+    .meal-btn {
+      background: transparent;
+      border: none;
+      color: var(--muted);
+      font-family: 'Montserrat', sans-serif;
+      font-size: .58rem;
+      letter-spacing: .25em;
+      text-transform: uppercase;
+      padding: 10px 22px;
+      cursor: pointer;
+      transition: all .3s;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+    .meal-btn.lunch.active { background: rgba(201,168,76,0.18); color: var(--gold); }
+    .meal-btn.dinner.active { background: rgba(139,0,0,0.35); color: #e8c0c0; }
+    .meal-btn svg { width:13px; height:13px; fill:currentColor; }
+    .meal-divider-line { width:1px; height:32px; background: var(--border); }
+
+    /* ── BUFFET TOGGLE ── */
+    .buffet-switch-wrap {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-left: auto;
+    }
+    .switch-label {
+      font-family: 'Montserrat', sans-serif;
+      font-size: .55rem;
+      letter-spacing: .25em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .buffet-toggle {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .toggle-switch {
+      position: relative;
+      width: 52px;
+      height: 26px;
+    }
+    .toggle-switch input { opacity: 0; width: 0; height: 0; }
+    .toggle-slider {
+      position: absolute;
+      inset: 0;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid var(--border);
+      border-radius: 26px;
+      cursor: pointer;
+      transition: .3s;
+    }
+    .toggle-slider:before {
+      content: '';
+      position: absolute;
+      height: 18px; width: 18px;
+      left: 3px; top: 3px;
+      background: var(--muted);
+      border-radius: 50%;
+      transition: .3s;
+    }
+    input:checked + .toggle-slider { background: rgba(46,125,50,0.3); border-color: #4caf50; }
+    input:checked + .toggle-slider:before { transform: translateX(26px); background: #4caf50; }
+    .toggle-state {
+      font-family: 'Montserrat', sans-serif;
+      font-size: .55rem;
+      letter-spacing: .2em;
+      text-transform: uppercase;
+      color: var(--muted);
+      min-width: 40px;
+    }
+    .toggle-state.on { color: #4caf50; }
+
+    /* ── SECTION BLOCKS ── */
+    .section-block {
+      margin-bottom: 48px;
+    }
+    .section-block-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 20px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--border);
+    }
+    .section-block-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.5rem;
+      font-style: italic;
+      color: var(--cream);
+      flex: 1;
+    }
+    .section-item-count {
+      font-family: 'Montserrat', sans-serif;
+      font-size: .55rem;
+      letter-spacing: .2em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .cat-label {
+      font-family: 'Montserrat', sans-serif;
+      font-size: .55rem;
+      letter-spacing: .35em;
+      text-transform: uppercase;
+      color: var(--gold);
+      padding: 10px 0 8px;
+      border-bottom: 1px solid var(--border);
+      margin: 24px 0 12px;
+    }
+
+    /* ── MENU ITEM ROW ── */
+    .item-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 14px 16px;
+      border: 1px solid transparent;
+      transition: all .25s;
+      border-radius: 1px;
+      margin-bottom: 4px;
+      background: rgba(255,255,255,0.02);
+    }
+    .item-row:hover { border-color: var(--border); background: rgba(255,255,255,0.04); }
+    .item-row.hidden-item {
+      background: var(--hidden-overlay);
+      border-color: rgba(139,0,0,0.2);
+    }
+    .item-row.hidden-item .item-row-name,
+    .item-row.hidden-item .item-row-desc { opacity: 0.35; text-decoration: line-through; text-decoration-color: rgba(139,0,0,0.4); }
+    .item-row-name {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.05rem;
+      color: var(--cream);
+      flex: 1;
+      transition: opacity .25s;
+    }
+    .item-row-desc {
+      font-style: italic;
+      font-size: .85rem;
+      color: var(--muted);
+      flex: 1.5;
+      transition: opacity .25s;
+    }
+    .item-row-price {
+      font-family: 'Montserrat', sans-serif;
+      font-size: .8rem;
+      color: var(--gold);
+      font-weight: 600;
+      min-width: 90px;
+      text-align: right;
+    }
+
+    /* ── HIDE TOGGLE BTN ── */
+    .hide-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-family: 'Montserrat', sans-serif;
+      font-size: .5rem;
+      letter-spacing: .2em;
+      text-transform: uppercase;
+      padding: 6px 12px;
+      cursor: pointer;
+      transition: all .2s;
+      white-space: nowrap;
+    }
+    .hide-btn:hover { border-color: var(--gold); color: var(--gold); }
+    .hide-btn.is-hidden { border-color: rgba(139,0,0,0.4); color: #e8a0a0; background: rgba(139,0,0,0.1); }
+    .hide-btn.is-hidden:hover { border-color: #4caf50; color: #4caf50; background: rgba(46,125,50,0.08); }
+    .hide-btn svg { width:11px; height:11px; fill:currentColor; }
+
+    /* ── SAVE BAR ── */
+    .save-bar {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      padding: 16px 24px;
+      background: var(--panel);
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      z-index: 200;
+    }
+    .save-status {
+      font-family: 'Montserrat', sans-serif;
+      font-size: .55rem;
+      letter-spacing: .2em;
+      text-transform: uppercase;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .save-status .live-dot { width:6px; height:6px; border-radius:50%; background:#27ae60; animation:pulse 2s ease-in-out infinite; }
+    .btn-save {
+      background: var(--crimson);
+      border: 1px solid var(--crimson-light);
+      color: var(--cream);
+      font-family: 'Montserrat', sans-serif;
+      font-size: .6rem;
+      letter-spacing: .25em;
+      text-transform: uppercase;
+      padding: 12px 32px;
+      cursor: pointer;
+      transition: all .2s;
+    }
+    .btn-save:hover { background: var(--crimson-light); }
+    .btn-save:disabled { opacity: .4; cursor: default; }
+    .btn-gold {
+      background: transparent;
+      border: 1px solid var(--gold);
+      color: var(--gold);
+      font-family: 'Montserrat', sans-serif;
+      font-size: .6rem;
+      letter-spacing: .25em;
+      text-transform: uppercase;
+      padding: 12px 28px;
+      cursor: pointer;
+      transition: all .2s;
+    }
+    .btn-gold:hover { background: var(--gold-dim); }
+    .spinner {
+      width:18px; height:18px; border:2px solid var(--border);
+      border-top-color:var(--gold); border-radius:50%;
+      animation:spin 1s linear infinite; display:none;
+    }
+
+    /* ── DASHBOARD ── */
+    .dash-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 20px;
+      margin-bottom: 40px;
+    }
+    .dash-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      padding: 24px;
+    }
+    .dash-card-title {
+      font-family: 'Montserrat', sans-serif;
+      font-size: .55rem;
+      letter-spacing: .35em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .dash-card-title svg { width:13px; height:13px; fill:currentColor; }
+    .dash-number {
+      font-family: 'Playfair Display', serif;
+      font-size: 2.8rem;
+      color: var(--cream);
+      line-height: 1;
+    }
+    .dash-sub {
+      font-family: 'Montserrat', sans-serif;
+      font-size: .55rem;
+      letter-spacing: .2em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-top: 6px;
+    }
+
+    /* ── INGREDIENT FREQ CHART ── */
+    .chart-section {
+      background: var(--card);
+      border: 1px solid var(--border);
+      padding: 28px;
+      margin-bottom: 28px;
+    }
+    .chart-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.4rem;
+      font-style: italic;
+      color: var(--cream);
+      margin-bottom: 6px;
+    }
+    .chart-sub {
+      font-family: 'Montserrat', sans-serif;
+      font-size: .55rem;
+      letter-spacing: .2em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 24px;
+    }
+    .freq-bar-list { display: flex; flex-direction: column; gap: 10px; }
+    .freq-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .freq-ing {
+      font-family: 'Montserrat', sans-serif;
+      font-size: .6rem;
+      letter-spacing: .1em;
+      color: var(--cream);
+      min-width: 130px;
+      text-transform: capitalize;
+    }
+    .freq-track {
+      flex: 1;
+      height: 8px;
+      background: rgba(255,255,255,0.06);
+      border-radius: 0;
+      overflow: hidden;
+    }
+    .freq-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--crimson), var(--gold));
+      border-radius: 0;
+      transition: width .6s ease;
+    }
+    .freq-count {
+      font-family: 'Montserrat', sans-serif;
+      font-size: .55rem;
+      color: var(--muted);
+      min-width: 40px;
+      text-align: right;
+      letter-spacing: .1em;
+    }
+    .freq-badge {
+      font-family: 'Montserrat', sans-serif;
+      font-size: .45rem;
+      letter-spacing: .15em;
+      text-transform: uppercase;
+      padding: 2px 8px;
+      border-radius: 0;
+    }
+    .freq-badge.high { background: rgba(139,0,0,0.3); color: #e8a0a0; border: 1px solid rgba(139,0,0,0.4); }
+    .freq-badge.med  { background: rgba(201,168,76,0.15); color: var(--gold); border: 1px solid rgba(201,168,76,0.3); }
+    .freq-badge.low  { background: rgba(255,255,255,0.04); color: var(--muted); border: 1px solid var(--border); }
+
+    .section-chart-title {
+      font-family: 'Montserrat', sans-serif;
+      font-size: .55rem;
+      letter-spacing: .3em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin: 28px 0 14px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+    }
+
+    /* ── HIDDEN ITEMS LOG ── */
+    .hidden-log {
+      background: var(--card);
+      border: 1px solid rgba(139,0,0,0.3);
+      padding: 24px;
+      margin-bottom: 28px;
+    }
+    .hidden-log-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.3rem;
+      font-style: italic;
+      color: #e8a0a0;
+      margin-bottom: 6px;
+    }
+    .hidden-log-sub {
+      font-family: 'Montserrat', sans-serif;
+      font-size: .55rem;
+      letter-spacing: .2em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 20px;
+    }
+    .hidden-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      background: rgba(139,0,0,0.12);
+      border: 1px solid rgba(139,0,0,0.3);
+      padding: 6px 14px;
+      margin: 4px;
+      font-family: 'Montserrat', sans-serif;
+      font-size: .55rem;
+      letter-spacing: .1em;
+      color: #e8a0a0;
+      cursor: pointer;
+      transition: all .2s;
+    }
+    .hidden-pill:hover { background: rgba(46,125,50,0.1); border-color: #4caf50; color: #4caf50; }
+    .hidden-pill svg { width:10px; height:10px; fill:currentColor; }
+
+    /* ── LOGIN ── */
+    .login-wrap {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .login-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      padding: 48px 40px;
+      width: 100%;
+      max-width: 420px;
+      text-align: center;
+    }
+    .login-box h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.8rem;
+      font-style: italic;
+      margin-bottom: 8px;
+    }
+    .login-box .sub {
+      font-family: 'Montserrat', sans-serif;
+      font-size: .55rem;
+      letter-spacing: .25em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 32px;
+    }
+    .field-group {
+      text-align: left;
+      margin-bottom: 18px;
+    }
+    .field-group label {
+      display: block;
+      font-family: 'Montserrat', sans-serif;
+      font-size: .55rem;
+      letter-spacing: .25em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+    .field-group input {
+      width: 100%;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border);
+      color: var(--cream);
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1rem;
+      padding: 12px 16px;
+      outline: none;
+      transition: border-color .2s;
+    }
+    .field-group input:focus { border-color: var(--gold); }
+    .btn-login {
+      width: 100%;
+      background: var(--crimson);
+      border: 1px solid var(--crimson-light);
+      color: var(--cream);
+      font-family: 'Montserrat', sans-serif;
+      font-size: .6rem;
+      letter-spacing: .3em;
+      text-transform: uppercase;
+      padding: 14px;
+      cursor: pointer;
+      transition: all .2s;
+      margin-top: 8px;
+    }
+    .btn-login:hover { background: var(--crimson-light); }
+    .login-error {
+      font-family: 'Montserrat', sans-serif;
+      font-size: .55rem;
+      letter-spacing: .15em;
+      color: #e8a0a0;
+      margin-top: 12px;
+      display: none;
+    }
+
+    /* ── UTILS ── */
+    @keyframes fadeUp { from{opacity:0;transform:translateY(14px);} to{opacity:1;transform:translateY(0);} }
+    @keyframes fadeIn { from{opacity:0;} to{opacity:1;} }
+    @keyframes spin { to { transform:rotate(360deg); } }
+    @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:.3;} }
+
+    .divider { display:flex; align-items:center; gap:12px; margin:20px auto 28px; }
+    .divider span { height:1px; flex:1; background:var(--border); }
+    .divider i { color:var(--gold); font-style:normal; font-size:.6rem; }
+
+    #loadingOverlay {
+      position: fixed; inset: 0; background: var(--deep);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 999;
+    }
+    .load-spinner {
+      width:40px; height:40px; border:2px solid var(--border);
+      border-top-color:var(--gold); border-radius:50%;
+      animation:spin 1s linear infinite;
+    }
+
+    .toast {
+      position: fixed; top: 24px; right: 24px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      padding: 14px 22px;
+      font-family: 'Montserrat', sans-serif;
+      font-size: .6rem;
+      letter-spacing: .2em;
+      text-transform: uppercase;
+      color: var(--cream);
+      z-index: 9999;
+      opacity: 0;
+      transform: translateY(-10px);
+      transition: all .3s;
+      pointer-events: none;
+    }
+    .toast.show { opacity: 1; transform: translateY(0); }
+    .toast.success { border-color: #4caf50; color: #81c784; }
+    .toast.error { border-color: rgba(139,0,0,0.6); color: #e8a0a0; }
+
+    @media(max-width:640px) {
+      .item-row-desc { display:none; }
+      .status-bar { flex-direction:column; align-items:flex-start; }
+      .buffet-switch-wrap { margin-left:0; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="loadingOverlay"><div class="load-spinner"></div></div>
+<div class="toast" id="toast"></div>
+
+<!-- ── LOGIN SCREEN ── -->
+<div id="loginScreen">
+  <div class="login-wrap">
+    <div class="login-box">
+      <div class="logo-ornament" style="display:flex;align-items:center;justify-content:center;gap:14px;margin-bottom:18px;">
+        <span style="height:1px;width:50px;background:linear-gradient(90deg,transparent,var(--gold));display:block;"></span>
+        <svg viewBox="0 0 24 24" style="width:20px;height:20px;fill:var(--gold);opacity:.7"><path d="M11 9H9V2H7v7H5V2H3v7c0 2.12 1.66 3.84 3.75 3.97V22h2.5v-9.03C11.34 12.84 13 11.12 13 9V2h-2v7zm5-3v8h2.5v8H21V2c-2.76 0-5 2.24-5 4z"/></svg>
+        <span style="height:1px;width:50px;background:linear-gradient(90deg,var(--gold),transparent);display:block;"></span>
+      </div>
+      <h2>Chef Admin</h2>
+      <p class="sub">Redcliff Restaurant & Bar</p>
+      <div class="field-group">
+        <label>Email</label>
+        <input type="email" id="loginEmail" placeholder="chef@redcliff.co.ke" autocomplete="email"/>
+      </div>
+      <div class="field-group">
+        <label>Password</label>
+        <input type="password" id="loginPass" placeholder="••••••••" autocomplete="current-password"/>
+      </div>
+      <button class="btn-login" onclick="doLogin()">Sign In</button>
+      <p class="login-error" id="loginError">Invalid credentials. Please try again.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ── MAIN APP (shown after login) ── -->
+<div id="mainApp" style="display:none;">
+
+  <!-- Hero -->
+  <header class="hero">
+    <div style="display:flex;align-items:center;justify-content:center;gap:14px;margin-bottom:14px;">
+      <span style="height:1px;width:60px;background:linear-gradient(90deg,transparent,var(--gold));display:block;"></span>
+      <svg viewBox="0 0 24 24" style="width:22px;height:22px;fill:var(--gold);opacity:.7"><path d="M11 9H9V2H7v7H5V2H3v7c0 2.12 1.66 3.84 3.75 3.97V22h2.5v-9.03C11.34 12.84 13 11.12 13 9V2h-2v7zm5-3v8h2.5v8H21V2c-2.76 0-5 2.24-5 4z"/></svg>
+      <span style="height:1px;width:60px;background:linear-gradient(90deg,var(--gold),transparent);display:block;"></span>
+    </div>
+    <div class="admin-badge"><span class="dot"></span> Chef Control Panel</div>
+    <h1 class="restaurant-name">REDCLIFF</h1>
+    <p class="tagline">Restaurant &amp; Bar — Naivasha Kongoni</p>
+    <p id="adminUser">Signed in as <span id="adminEmail"></span> &nbsp;·&nbsp; <a href="#" onclick="doLogout()" style="color:var(--gold);text-decoration:none;">Sign out</a></p>
+  </header>
+
+  <!-- Tabs -->
+  <div class="tabs-bar">
+    <button class="tab-btn active" onclick="switchTab('menu',this)">
+      <svg viewBox="0 0 24 24"><path d="M8.1 13.34l2.83-2.83L3.91 3.5c-1.56 1.56-1.56 4.09 0 5.66l4.19 4.18zm6.78-1.81c1.53.71 3.68.21 5.27-1.38 1.91-1.91 2.28-4.65.81-6.12-1.46-1.46-4.2-1.1-6.12.81-1.59 1.59-2.09 3.74-1.38 5.27L3.7 19.87l1.41 1.41L12 14.41l6.88 6.88 1.41-1.41L13.41 13l1.47-1.47z"/></svg>
+      Menu Items
+    </button>
+    <button class="tab-btn" onclick="switchTab('dashboard',this)">
+      <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+      Analytics
+    </button>
+  </div>
+
+  <!-- ══ TAB: MENU ITEMS ══ -->
+  <div class="tab-panel active" id="tab-menu">
+    <div class="admin-wrap">
+
+      <!-- Status Bar -->
+      <div class="status-bar">
+        <span class="status-label">Service:</span>
+        <div class="meal-toggle">
+          <button class="meal-btn lunch active" id="lunchBtn" onclick="setMealPeriod('lunch')">
+            <svg viewBox="0 0 24 24"><path d="M6.76 4.84l-1.8-1.79-1.41 1.41 1.79 1.79 1.42-1.41zM4 10.5H1v2h3v-2zm9-9.95h-2V3.5h2V.55zm7.45 3.91l-1.41-1.41-1.79 1.79 1.41 1.41 1.79-1.79zM20 10.5v2h3v-2h-3zm-8-5c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6-2.69-6-6-6zm-1 16.95h2V19.5h-2v2.95zm-7.45-3.91l1.41 1.41 1.79-1.8-1.41-1.41-1.79 1.8z"/></svg>
+            Lunch
+          </button>
+          <div class="meal-divider-line"></div>
+          <button class="meal-btn dinner" id="dinnerBtn" onclick="setMealPeriod('dinner')">
+            <svg viewBox="0 0 24 24"><path d="M11.1 12.08C8.77 7.57 10.6 3.6 11.53 2c-6.27.99-8.28 7.3-6.56 11.9.1.28.22.56.35.83.01.04-.01.07-.04.09-.8.44-1.52 1.05-2.07 1.79-.01.01-.03.02-.04.03-.22.2-.37.45-.43.72-.16.73.16 1.49.77 1.94.4.3.88.46 1.36.46.1 0 .2-.01.3-.03l4.45-.9c.08-.02.14-.05.2-.08l.12-.07c.12-.07.23-.16.33-.26.53-.53.67-1.34.32-2l-1-.04c.16-.32.3-.65.42-.98zM21 8.5c0-.83-.34-1.58-.88-2.12C19.58 5.84 18.83 5.5 18 5.5s-1.58.34-2.12.88C15.34 6.92 15 7.67 15 8.5c0 1.86 1.27 3.43 3 3.87v8.13h2v-8.13c1.73-.44 3-2.01 3-3.87z"/></svg>
+            Dinner
+          </button>
+        </div>
+
+        <div class="buffet-switch-wrap">
+          <span class="switch-label">Buffet Service:</span>
+          <div class="buffet-toggle">
+            <label class="toggle-switch">
+              <input type="checkbox" id="buffetToggle" onchange="toggleBuffet(this)"/>
+              <span class="toggle-slider"></span>
+            </label>
+            <span class="toggle-state" id="buffetState">Off</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dynamic menu sections rendered here -->
+      <div id="menuEditor"></div>
+
+    </div>
+  </div>
+
+  <!-- ══ TAB: ANALYTICS ══ -->
+  <div class="tab-panel" id="tab-dashboard">
+    <div class="admin-wrap">
+
+      <!-- Summary cards -->
+      <div class="dash-grid" id="dashCards"></div>
+
+      <!-- Hidden items log -->
+      <div class="hidden-log" id="hiddenLog" style="display:none;">
+        <div class="hidden-log-title">Hidden Items</div>
+        <div class="hidden-log-sub">Items currently hidden from guests — tap to restore quickly</div>
+        <div id="hiddenPillsWrap"></div>
+      </div>
+
+      <!-- Ingredient frequency -->
+      <div class="chart-section">
+        <div class="chart-title">Ingredient Frequency</div>
+        <div class="chart-sub">How often each ingredient / protein / element appears across all menu items</div>
+        <div id="freqChartAll"></div>
+      </div>
+
+      <!-- Per-section breakdown -->
+      <div class="chart-section">
+        <div class="chart-title">By Menu Section</div>
+        <div class="chart-sub">Ingredient frequency broken down per section — useful for planning purchases per service</div>
+        <div id="freqChartSections"></div>
+      </div>
+
+    </div>
+  </div>
+
+</div><!-- /mainApp -->
+
+<!-- Save bar (global) -->
+<div class="save-bar" id="saveBar" style="display:none;">
+  <div class="save-status">
+    <span class="live-dot"></span>
+    <span id="saveStatusText">Unsaved changes</span>
+    <div class="spinner" id="saveSpinner"></div>
+  </div>
+  <div style="display:flex;gap:10px;">
+    <button class="btn-gold" onclick="discardChanges()">Discard</button>
+    <button class="btn-save" id="saveBtn" onclick="saveMenu()">Push to Live Menu</button>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp }    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, doc, onSnapshot, setDoc, getDoc }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey:            "AIzaSyDcDGxVdcVIJfW1Tij8AHw4P2KmVT4IUsM",
+  authDomain:        "nkl-menu.firebaseapp.com",
+  projectId:         "nkl-menu",
+  storageBucket:     "nkl-menu.firebasestorage.app",
+  messagingSenderId: "997554521363",
+  appId:             "1:997554521363:web:8fbea8e147e4562e1d46e6"
+};
+
+const app  = initializeApp(firebaseConfig);
+const db   = getFirestore(app);
+const auth = getAuth(app);
+
+// ── STATE ───────────────────────────────────────────────────────────────────
+let menuData        = null;   // live from Firestore
+let workingMenu     = null;   // chef's working copy (deep clone)
+let hiddenItems     = {};     // { "sectionKey::catName::itemIndex": true }
+let buffetOn        = true;
+let mealPeriod      = 'lunch';
+let hasUnsaved      = false;
+let unsubscribe     = null;
+
+// ── AUTH ─────────────────────────────────────────────────────────────────────
+onAuthStateChanged(auth, (user) => {
+  document.getElementById('loadingOverlay').style.display = 'none';
+  if (user) {
+    document.getElementById('loginScreen').style.display  = 'none';
+    document.getElementById('mainApp').style.display      = 'block';
+    document.getElementById('saveBar').style.display      = 'flex';
+    document.getElementById('adminEmail').textContent     = user.email;
+    startListener();
+  } else {
+    document.getElementById('loginScreen').style.display  = 'block';
+    document.getElementById('mainApp').style.display      = 'none';
+    document.getElementById('saveBar').style.display      = 'none';
+    if (unsubscribe) { unsubscribe(); unsubscribe = null; }
+  }
+});
+
+window.doLogin = async function() {
+  const email = document.getElementById('loginEmail').value.trim();
+  const pass  = document.getElementById('loginPass').value;
+  const errEl = document.getElementById('loginError');
+  errEl.style.display = 'none';
+  try {
+    await signInWithEmailAndPassword(auth, email, pass);
+  } catch(e) {
+    errEl.style.display = 'block';
+  }
+};
+
+window.doLogout = async function() {
+  await signOut(auth);
+};
+
+// Allow Enter key on login
+document.getElementById('loginPass').addEventListener('keydown', e => {
+  if (e.key === 'Enter') window.doLogin();
+});
+
+// ── FIRESTORE LISTENER ───────────────────────────────────────────────────────
+function startListener() {
+  unsubscribe = onSnapshot(doc(db, 'menu', 'current'), (snap) => {
+    const data = snap.exists() ? snap.data() : null;
+    if (data) {
+      menuData    = data.sections   || getDefaultMenu();
+      hiddenItems = data.hiddenItems || {};
+      buffetOn    = data.buffetOn !== undefined ? data.buffetOn : true;
+      mealPeriod  = data.mealPeriod || 'lunch';
+    } else {
+      menuData    = getDefaultMenu();
+      hiddenItems = {};
+      buffetOn    = true;
+      mealPeriod  = 'lunch';
+    }
+    if (!hasUnsaved) {
+      workingMenu = deepClone(menuData);
+    }
+    syncUI();
+  });
+}
+
+// ── SYNC UI FROM STATE ───────────────────────────────────────────────────────
+function syncUI() {
+  // Meal period buttons
+  document.getElementById('lunchBtn').classList.toggle('active', mealPeriod === 'lunch');
+  document.getElementById('dinnerBtn').classList.toggle('active', mealPeriod === 'dinner');
+  // Buffet toggle
+  const buffetChk = document.getElementById('buffetToggle');
+  buffetChk.checked = buffetOn;
+  document.getElementById('buffetState').textContent = buffetOn ? 'On' : 'Off';
+  document.getElementById('buffetState').className   = 'toggle-state' + (buffetOn ? ' on' : '');
+  // Render
+  renderMenuEditor(workingMenu);
+  renderDashboard(workingMenu);
+}
+
+// ── MEAL PERIOD ──────────────────────────────────────────────────────────────
+window.setMealPeriod = function(period) {
+  mealPeriod = period;
+  document.getElementById('lunchBtn').classList.toggle('active', period === 'lunch');
+  document.getElementById('dinnerBtn').classList.toggle('active', period === 'dinner');
+  markUnsaved();
+};
+
+// ── BUFFET TOGGLE ─────────────────────────────────────────────────────────────
+window.toggleBuffet = function(chk) {
+  buffetOn = chk.checked;
+  document.getElementById('buffetState').textContent = buffetOn ? 'On' : 'Off';
+  document.getElementById('buffetState').className   = 'toggle-state' + (buffetOn ? ' on' : '');
+  markUnsaved();
+};
+
+// ── HIDE / SHOW ITEM ──────────────────────────────────────────────────────────
+window.toggleHideItem = function(sectionKey, catName, itemIdx, btn) {
+  const key = `${sectionKey}::${catName}::${itemIdx}`;
+  if (hiddenItems[key]) {
+    delete hiddenItems[key];
+  } else {
+    hiddenItems[key] = true;
+  }
+  // Update row styling
+  const row = btn.closest('.item-row');
+  const isNowHidden = !!hiddenItems[key];
+  row.classList.toggle('hidden-item', isNowHidden);
+  btn.classList.toggle('is-hidden', isNowHidden);
+  btn.innerHTML = isNowHidden
+    ? `<svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg> Show`
+    : `<svg viewBox="0 0 24 24"><path d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z"/></svg> Hide`;
+  markUnsaved();
+  renderDashboard(workingMenu);
+};
+
+// ── RENDER MENU EDITOR ────────────────────────────────────────────────────────
+function renderMenuEditor(menu) {
+  const wrap = document.getElementById('menuEditor');
+  wrap.innerHTML = '';
+  if (!menu) return;
+
+  Object.entries(menu).forEach(([sectionKey, sec]) => {
+    const block = document.createElement('div');
+    block.className = 'section-block';
+
+    const cats = sec.categories || {};
+    const totalItems = Object.values(cats).reduce((s,a) => s + a.length, 0);
+    const hiddenCount = Object.keys(hiddenItems).filter(k => k.startsWith(sectionKey + '::')).length;
+
+    block.innerHTML = `
+      <div class="section-block-header">
+        <div class="section-block-title">${sec.label}</div>
+        <span class="section-item-count">${totalItems} items${hiddenCount ? ` · ${hiddenCount} hidden` : ''}</span>
+      </div>`;
+
+    Object.entries(cats).forEach(([catName, items]) => {
+      const catEl = document.createElement('div');
+      catEl.innerHTML = `<div class="cat-label">${catName}</div>`;
+
+      (items || []).forEach((item, idx) => {
+        const key = `${sectionKey}::${catName}::${idx}`;
+        const isHidden = !!hiddenItems[key];
+        const row = document.createElement('div');
+        row.className = 'item-row' + (isHidden ? ' hidden-item' : '');
+        row.innerHTML = `
+          <div class="item-row-name">${item.name}</div>
+          <div class="item-row-desc">${item.desc || ''}</div>
+          <div class="item-row-price">${item.price || '—'}</div>
+          <button class="hide-btn ${isHidden ? 'is-hidden' : ''}" onclick="toggleHideItem('${sectionKey}','${catName.replace(/'/g,"\\'")}',${idx},this)">
+            ${isHidden
+              ? `<svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg> Show`
+              : `<svg viewBox="0 0 24 24"><path d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z"/></svg> Hide`}
+          </button>`;
+        catEl.appendChild(row);
+      });
+      block.appendChild(catEl);
+    });
+
+    wrap.appendChild(block);
+    const div = document.createElement('div');
+    div.className = 'divider';
+    div.innerHTML = '<span></span><i>✦</i><span></span>';
+    wrap.appendChild(div);
+  });
+}
+
+// ── RENDER DASHBOARD ──────────────────────────────────────────────────────────
+function renderDashboard(menu) {
+  if (!menu) return;
+
+  // Count stats
+  let totalItems = 0, totalHidden = 0, totalSections = 0;
+  Object.entries(menu).forEach(([sk, sec]) => {
+    totalSections++;
+    Object.values(sec.categories || {}).forEach((items, i) => {
+      totalItems += items.length;
+    });
+  });
+  totalHidden = Object.keys(hiddenItems).length;
+  const totalVisible = totalItems - totalHidden;
+
+  // Summary cards
+  document.getElementById('dashCards').innerHTML = `
+    <div class="dash-card">
+      <div class="dash-card-title"><svg viewBox="0 0 24 24"><path d="M8.1 13.34l2.83-2.83L3.91 3.5c-1.56 1.56-1.56 4.09 0 5.66l4.19 4.18zm6.78-1.81c1.53.71 3.68.21 5.27-1.38 1.91-1.91 2.28-4.65.81-6.12-1.46-1.46-4.2-1.1-6.12.81-1.59 1.59-2.09 3.74-1.38 5.27L3.7 19.87l1.41 1.41L12 14.41l6.88 6.88 1.41-1.41L13.41 13l1.47-1.47z"/></svg> Total Items</div>
+      <div class="dash-number">${totalItems}</div>
+      <div class="dash-sub">Across ${totalSections} menu sections</div>
+    </div>
+    <div class="dash-card">
+      <div class="dash-card-title"><svg viewBox="0 0 24 24" style="fill:#81c784"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg> Visible to Guests</div>
+      <div class="dash-number" style="color:#81c784">${totalVisible}</div>
+      <div class="dash-sub">Currently live on the menu</div>
+    </div>
+    <div class="dash-card">
+      <div class="dash-card-title"><svg viewBox="0 0 24 24" style="fill:#e8a0a0"><path d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27z"/></svg> Hidden Items</div>
+      <div class="dash-number" style="color:#e8a0a0">${totalHidden}</div>
+      <div class="dash-sub">Kept in database, not shown</div>
+    </div>
+    <div class="dash-card">
+      <div class="dash-card-title"><svg viewBox="0 0 24 24" style="fill:${buffetOn ? '#81c784' : 'var(--muted)'}"><path d="M18.06 22.99h1.66c.84 0 1.53-.64 1.63-1.46L23 5.05h-5V1h-1.97v4.05h-4.97l.3 2.34c1.71.47 3.31 1.32 4.27 2.26 1.44 1.42 2.43 2.89 2.43 5.29v8.05zM1 21.99V21h15.03v.99c0 .55-.45 1-1.01 1H2.01c-.56 0-1.01-.45-1.01-1zm15.03-7c0-8.07-15.03-8.07-15.03 0h15.03zM1.02 17h15v2h-15z"/></svg> Buffet Status</div>
+      <div class="dash-number" style="color:${buffetOn ? '#81c784' : '#e8a0a0'};font-size:2rem;padding-top:6px;">${buffetOn ? 'Active' : 'Off'}</div>
+      <div class="dash-sub">${buffetOn ? 'Buffet section is live' : 'Buffet hidden from guests'}</div>
+    </div>`;
+
+  // Hidden items pills
+  const hiddenLogEl = document.getElementById('hiddenLog');
+  const pillsWrap   = document.getElementById('hiddenPillsWrap');
+  pillsWrap.innerHTML = '';
+  const hiddenKeys = Object.keys(hiddenItems);
+  if (hiddenKeys.length > 0) {
+    hiddenLogEl.style.display = 'block';
+    hiddenKeys.forEach(key => {
+      const [sk, cat, idx] = key.split('::');
+      const item = menu[sk]?.categories?.[cat]?.[parseInt(idx)];
+      if (!item) return;
+      const pill = document.createElement('div');
+      pill.className = 'hidden-pill';
+      pill.title = `Click to restore ${item.name}`;
+      pill.innerHTML = `<svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg> ${item.name} <small style="opacity:.5">(${menu[sk]?.label})</small>`;
+      pill.onclick = () => {
+        delete hiddenItems[key];
+        renderMenuEditor(workingMenu);
+        renderDashboard(workingMenu);
+        markUnsaved();
+      };
+      pillsWrap.appendChild(pill);
+    });
+  } else {
+    hiddenLogEl.style.display = 'none';
+  }
+
+  // Ingredient frequency — all items
+  const allFreq = extractIngredientFrequency(menu, null);
+  renderFreqBars(document.getElementById('freqChartAll'), allFreq, 20);
+
+  // Per section
+  const secEl = document.getElementById('freqChartSections');
+  secEl.innerHTML = '';
+  Object.entries(menu).forEach(([sk, sec]) => {
+    const freq = extractIngredientFrequency(menu, sk);
+    if (freq.length === 0) return;
+    const title = document.createElement('div');
+    title.className = 'section-chart-title';
+    title.textContent = sec.label;
+    secEl.appendChild(title);
+    renderFreqBars(secEl, freq, 10);
+  });
+}
+
+// Extract ingredient keywords from item names + descriptions
+function extractIngredientFrequency(menu, filterSection) {
+  const freq = {};
+  const stopWords = new Set([
+    'the','a','an','and','or','with','of','in','on','to','for','from','fresh',
+    'our','house','your','daily','per','each','sauce','served','style','catch',
+    'season','seasonal','selection','today','ask','server','classic','traditional',
+    'rotating','freshly','prepared','morning'
+  ]);
+
+  // Keywords that represent meaningful ingredients/proteins/elements
+  const ingredients = [
+    'beef','chicken','lamb','fish','tilapia','salmon','prawns','seafood','pork',
+    'mushroom','truffle','bacon','egg','butter','cream','garlic','lemon',
+    'tomato','onion','ginger','mint','lime','passion','mango','coconut',
+    'vanilla','chocolate','caramel','rice','ugali','potato','fries','bread',
+    'sourdough','basmati','asparagus','spinach','kale','greens','avocado',
+    'pepper','cheese','wine','whiskey','vodka','bourbon','rum','gin','beer',
+    'tusker','soda','juice','lager','white cap','keg','barley','malt'
+  ];
+
+  const sections = filterSection ? { [filterSection]: menu[filterSection] } : menu;
+
+  Object.values(sections).forEach(sec => {
+    Object.values(sec?.categories || {}).forEach(items => {
+      (items || []).forEach(item => {
+        const text = ((item.name || '') + ' ' + (item.desc || '')).toLowerCase();
+        ingredients.forEach(ing => {
+          if (text.includes(ing)) {
+            freq[ing] = (freq[ing] || 0) + 1;
+          }
+        });
+        // Also scan individual words
+        text.split(/[\s,.\-\/()]+/).forEach(w => {
+          w = w.replace(/[^a-z]/g,'');
+          if (w.length < 4 || stopWords.has(w)) return;
+          if (!ingredients.includes(w)) {
+            freq[w] = (freq[w] || 0) + 1;
+          }
+        });
+      });
+    });
+  });
+
+  return Object.entries(freq)
+    .filter(([k,v]) => v >= 1)
+    .sort((a,b) => b[1]-a[1])
+    .slice(0, 30)
+    .map(([name, count]) => ({ name, count }));
+}
+
+function renderFreqBars(container, data, limit) {
+  if (data.length === 0) {
+    container.innerHTML = '<div style="font-family:\'Montserrat\',sans-serif;font-size:.55rem;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);padding:12px 0;">No data available</div>';
+    return;
+  }
+  const top = data.slice(0, limit);
+  const max = top[0]?.count || 1;
+  const listEl = document.createElement('div');
+  listEl.className = 'freq-bar-list';
+  top.forEach(({ name, count }) => {
+    const pct = Math.round((count / max) * 100);
+    const badge = count >= 4 ? 'high' : count >= 2 ? 'med' : 'low';
+    const badgeLabel = count >= 4 ? 'High' : count >= 2 ? 'Med' : 'Low';
+    listEl.innerHTML += `
+      <div class="freq-row">
+        <div class="freq-ing">${name}</div>
+        <div class="freq-track"><div class="freq-fill" style="width:${pct}%"></div></div>
+        <div class="freq-count">×${count}</div>
+        <span class="freq-badge ${badge}">${badgeLabel}</span>
+      </div>`;
+  });
+  container.appendChild(listEl);
+}
+
+// ── SAVE ──────────────────────────────────────────────────────────────────────
+window.saveMenu = async function() {
+  const btn = document.getElementById('saveBtn');
+  const spinner = document.getElementById('saveSpinner');
+  btn.disabled = true;
+  spinner.style.display = 'inline-block';
+  document.getElementById('saveStatusText').textContent = 'Saving…';
+  try {
+    await setDoc(doc(db, 'menu', 'current'), {
+      sections:    workingMenu,
+      hiddenItems: hiddenItems,
+      buffetOn:    buffetOn,
+      mealPeriod:  mealPeriod,
+      updatedAt:   new Date().toISOString()
+    });
+    hasUnsaved = false;
+    document.getElementById('saveStatusText').textContent = 'All changes saved';
+    showToast('Menu pushed to live!', 'success');
+  } catch(e) {
+    console.error(e);
+    showToast('Save failed — check your connection', 'error');
+    document.getElementById('saveStatusText').textContent = 'Save failed';
+  } finally {
+    btn.disabled = false;
+    spinner.style.display = 'none';
+  }
+};
+
+window.discardChanges = function() {
+  if (!confirm('Discard all unsaved changes?')) return;
+  workingMenu = deepClone(menuData);
+  hiddenItems = {};
+  hasUnsaved  = false;
+  syncUI();
+  document.getElementById('saveStatusText').textContent = 'Changes discarded';
+};
+
+function markUnsaved() {
+  hasUnsaved = true;
+  document.getElementById('saveStatusText').textContent = 'Unsaved changes';
+}
+
+// ── HELPERS ───────────────────────────────────────────────────────────────────
+function deepClone(obj) { return JSON.parse(JSON.stringify(obj)); }
+
+function showToast(msg, type='') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast ' + type;
+  setTimeout(() => t.classList.add('show'), 10);
+  setTimeout(() => t.classList.remove('show'), 3200);
+}
+
+// ── DEFAULT MENU ──────────────────────────────────────────────────────────────
+function getDefaultMenu() {
+  return {
+    buffet: {
+      label: "Buffet",
+      note: "Our daily rotating buffet — freshly prepared each morning. Served 12:00 – 15:00.",
+      price: "KES 1,500 per person",
+      categories: {
+        "Soups & Starters": [
+          { name:"Soup of the Day", desc:"Ask your server for today's selection", price:"" },
+          { name:"Garden Salad Bar", desc:"Seasonal greens, cherry tomatoes, house dressings", price:"" }
+        ],
+        "Main Course": [
+          { name:"Grilled Tilapia", desc:"Lemon butter sauce, sautéed vegetables", price:"" },
+          { name:"Beef Stew", desc:"Slow-cooked with root vegetables in a rich jus", price:"" },
+          { name:"Vegetable Curry", desc:"Coconut milk base, seasonal vegetables, basmati", price:"" }
+        ],
+        "Accompaniments": [
+          { name:"Ugali", desc:"Traditional maize meal", price:"" },
+          { name:"Steamed Rice", desc:"Fragrant long-grain basmati", price:"" }
+        ],
+        "Desserts": [
+          { name:"Seasonal Fruit Platter", desc:"Fresh-cut fruits of the day", price:"" },
+          { name:"Coconut Pudding", desc:"Chilled custard, passion fruit coulis", price:"" }
+        ]
+      }
+    },
+    alaCarte: {
+      label: "À La Carte",
+      categories: {
+        "Starters": [
+          { name:"Prawn Cocktail", desc:"Tiger prawns, Marie Rose, crispy lettuce", price:"KES 950" },
+          { name:"Mushroom Bruschetta", desc:"Wild mushrooms, garlic, thyme, sourdough", price:"KES 750" }
+        ],
+        "Mains": [
+          { name:"Grilled Ribeye", desc:"300g grain-fed ribeye, peppercorn sauce, fries", price:"KES 3,200" },
+          { name:"Pan-Seared Salmon", desc:"Beurre blanc, asparagus, baby potatoes", price:"KES 2,400" },
+          { name:"Chicken Supreme", desc:"Free-range breast, wild mushroom cream, truffle fries", price:"KES 1,800" }
+        ],
+        "Desserts": [
+          { name:"Chocolate Fondant", desc:"Warm cake, vanilla ice cream, raspberry coulis", price:"KES 800" },
+          { name:"Crème Brûlée", desc:"Classic vanilla custard, caramelised sugar", price:"KES 700" }
+        ]
+      }
+    },
+    bar: {
+      label: "Redcliff Bar",
+      categories: {
+        "Cocktails": [
+          { name:"Redcliff Sour", desc:"Bourbon, fresh lemon, honey syrup, egg white", price:"KES 950" },
+          { name:"Nairobi Mule", desc:"Vodka, fresh ginger beer, lime, mint", price:"KES 850" },
+          { name:"Passion Martini", desc:"Vodka, passion fruit, vanilla, sparkling wine float", price:"KES 1,100" }
+        ],
+        "Wines by the Glass": [
+          { name:"House Red", desc:"Shiraz, South Africa", price:"KES 700" },
+          { name:"House White", desc:"Sauvignon Blanc, South Africa", price:"KES 700" }
+        ],
+        "Beers": [
+          { name:"Tusker Lager", desc:"Kenya's classic 500ml", price:"KES 350" },
+          { name:"White Cap", desc:"Crisp Kenyan lager 500ml", price:"KES 350" }
+        ],
+        "Non-Alcoholic": [
+          { name:"Fresh Juice", desc:"Passion, mango, watermelon or mix", price:"KES 350" },
+          { name:"Virgin Mojito", desc:"Lime, mint, soda, cane sugar", price:"KES 450" }
+        ]
+      }
+    }
+  };
+}
+
+// ── TAB SWITCHING ─────────────────────────────────────────────────────────────
+window.switchTab = function(tab, btn) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('tab-' + tab).classList.add('active');
+  if (tab === 'dashboard') renderDashboard(workingMenu);
+};
+</script>
+</body>
+</html>

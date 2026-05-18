@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Redcliff Restaurant & Bar — Menu</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Cormorant+Garamond:wght@300;400;500&family=Montserrat:wght@300;400;600&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --crimson: #8B0000;
+      --gold: #C9A84C;
+      --deep: #1a0a0a;
+      --cream: #F9F3E8;
+      --muted: #7a6a5a;
+      --border: rgba(201,168,76,0.3);
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+
+    body {
+      background: var(--deep);
+      color: var(--cream);
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      min-height: 100vh;
+    }
+
+    /* ── HERO ── */
+    .hero {
+      position: relative;
+      text-align: center;
+      padding: 80px 20px 60px;
+      overflow: hidden;
+    }
+    .hero::before {
+      content:'';
+      position:absolute;
+      inset:0;
+      background:
+        radial-gradient(ellipse 60% 40% at 50% 0%, rgba(139,0,0,0.25) 0%, transparent 70%),
+        url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23C9A84C' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/svg%3E");
+      pointer-events:none;
+    }
+    .logo-ornament {
+      display:flex; align-items:center; justify-content:center; gap:16px;
+      margin-bottom:20px; opacity:0; animation:fadeUp .8s ease forwards;
+    }
+    .logo-ornament .line { height:1px; width:80px; background:linear-gradient(90deg,transparent,var(--gold)); }
+    .logo-ornament .line.r { background:linear-gradient(90deg,var(--gold),transparent); }
+    .logo-ornament svg { width:24px; height:24px; fill:var(--gold); opacity:.7; }
+    h1.restaurant-name {
+      font-family:'Playfair Display',serif;
+      font-size:clamp(3rem,8vw,6rem);
+      font-weight:700; letter-spacing:.12em; color:var(--cream); line-height:1;
+      opacity:0; animation:fadeUp .8s ease .15s forwards;
+    }
+    .tagline {
+      font-family:'Montserrat',sans-serif; font-size:.7rem;
+      letter-spacing:.4em; text-transform:uppercase; color:var(--gold);
+      margin-top:12px; opacity:0; animation:fadeUp .8s ease .3s forwards;
+    }
+    .date-badge {
+      display:inline-block; margin-top:28px; padding:6px 20px;
+      border:1px solid var(--border);
+      font-family:'Montserrat',sans-serif; font-size:.65rem;
+      letter-spacing:.3em; text-transform:uppercase; color:var(--gold);
+      opacity:0; animation:fadeUp .8s ease .45s forwards;
+    }
+
+    /* ── MEAL PERIOD TOGGLE ── */
+    .meal-toggle-wrap {
+      display:flex; justify-content:center; align-items:center; gap:0;
+      margin: 32px auto 0;
+      opacity:0; animation:fadeUp .8s ease .5s forwards;
+    }
+    .meal-toggle {
+      display:flex; align-items:center;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      border-radius: 0;
+      overflow: hidden;
+      position: relative;
+    }
+    .meal-btn {
+      background: transparent;
+      border: none;
+      color: var(--muted);
+      font-family: 'Montserrat', sans-serif;
+      font-size: .6rem;
+      letter-spacing: .3em;
+      text-transform: uppercase;
+      padding: 12px 28px;
+      cursor: pointer;
+      transition: all .3s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      z-index: 1;
+      position: relative;
+    }
+    .meal-btn.active {
+      color: var(--cream);
+    }
+    .meal-btn.lunch.active { background: rgba(201,168,76,0.15); color: var(--gold); }
+    .meal-btn.dinner.active { background: rgba(139,0,0,0.3); color: var(--cream); }
+    .meal-btn svg { width:14px; height:14px; fill:currentColor; flex-shrink:0; }
+    .meal-divider { width:1px; height:36px; background: var(--border); }
+    .meal-period-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      margin: 10px auto 0;
+      font-family: 'Montserrat', sans-serif; font-size: .55rem;
+      letter-spacing: .25em; text-transform: uppercase; color: var(--muted);
+    }
+    .meal-period-badge .dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--gold); flex-shrink: 0;
+    }
+    .meal-period-badge.dinner .dot { background: var(--crimson); }
+
+    /* ── TRANSLATION BAR ── */
+    .translate-bar {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      padding: 16px 20px 0;
+      flex-wrap: wrap;
+      opacity:0; animation:fadeUp .8s ease .6s forwards;
+    }
+    .translate-label {
+      font-family:'Montserrat',sans-serif; font-size:.55rem;
+      letter-spacing:.25em; text-transform:uppercase; color:var(--muted);
+      margin-right: 4px;
+    }
+    .lang-btn {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-family: 'Montserrat', sans-serif;
+      font-size: .6rem;
+      letter-spacing: .1em;
+      padding: 6px 14px;
+      cursor: pointer;
+      transition: all .25s;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .lang-btn:hover { border-color: var(--gold); color: var(--gold); }
+    .lang-btn.active { background: var(--gold); border-color: var(--gold); color: var(--deep); font-weight:600; }
+    .lang-btn .flag { font-size: .85rem; }
+
+    /* ── HIDE Google Translate toolbar (we use our own buttons) ── */
+    .goog-te-banner-frame, .skiptranslate { display:none !important; }
+    body { top: 0 !important; }
+    .goog-te-gadget { display:none !important; }
+
+    /* ── LOADING STATE ── */
+    #loadingState {
+      text-align:center; padding:80px 20px;
+      font-family:'Montserrat',sans-serif; font-size:.7rem;
+      letter-spacing:.3em; text-transform:uppercase; color:var(--muted);
+    }
+    .spinner {
+      width:32px; height:32px; border:2px solid var(--border);
+      border-top-color:var(--gold); border-radius:50%;
+      animation:spin 1s linear infinite; margin:0 auto 20px;
+    }
+    @keyframes spin { to { transform:rotate(360deg); } }
+
+    /* ── NAV ── */
+    .section-nav {
+      display:flex; justify-content:center; flex-wrap:wrap; gap:4px;
+      padding:40px 20px 0;
+      opacity:0; animation:fadeUp .8s ease .55s forwards;
+    }
+    .nav-btn {
+      background:transparent; border:1px solid var(--border); color:var(--muted);
+      font-family:'Montserrat',sans-serif; font-size:.65rem;
+      letter-spacing:.25em; text-transform:uppercase; padding:10px 22px;
+      cursor:pointer; transition:all .3s;
+    }
+    .nav-btn:hover, .nav-btn.active {
+      background:var(--crimson); border-color:var(--crimson); color:var(--cream);
+    }
+
+    /* ── MAIN ── */
+    main { max-width:960px; margin:0 auto; padding:60px 20px 100px; }
+    .menu-section { display:none; }
+    .menu-section.active { display:block; animation:fadeIn .4s ease forwards; }
+
+    .section-header { text-align:center; margin-bottom:50px; }
+    .section-header h2 {
+      font-family:'Playfair Display',serif;
+      font-size:clamp(2rem,5vw,3.2rem); font-weight:400; font-style:italic;
+    }
+    .section-header .sub {
+      font-family:'Montserrat',sans-serif; font-size:.6rem;
+      letter-spacing:.35em; text-transform:uppercase; color:var(--gold); margin-top:10px;
+    }
+    .divider { display:flex; align-items:center; gap:12px; margin:16px auto; max-width:200px; }
+    .divider span { height:1px; flex:1; background:var(--border); }
+    .divider i { color:var(--gold); font-style:normal; font-size:.6rem; }
+
+    .buffet-note {
+      background:linear-gradient(135deg,rgba(139,0,0,.15),rgba(201,168,76,.08));
+      border:1px solid var(--border); padding:24px 32px; margin-bottom:40px; text-align:center;
+    }
+    .buffet-note p { font-style:italic; font-size:1.05rem; line-height:1.7; }
+    .buffet-note .price-hl {
+      display:block; font-family:'Playfair Display',serif; font-size:2rem;
+      color:var(--gold); margin-top:12px; font-style:normal;
+    }
+
+    /* ── MEAL PERIOD BANNER ── */
+    .meal-banner {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 32px;
+      padding: 14px 20px;
+      border: 1px solid var(--border);
+      background: rgba(201,168,76,0.05);
+    }
+    .meal-banner.dinner {
+      background: rgba(139,0,0,0.1);
+      border-color: rgba(139,0,0,0.3);
+    }
+    .meal-banner svg { width:18px; height:18px; fill:var(--gold); flex-shrink:0; }
+    .meal-banner.dinner svg { fill: #e8a0a0; }
+    .meal-banner-text {
+      font-family: 'Montserrat', sans-serif;
+      font-size: .6rem;
+      letter-spacing: .25em;
+      text-transform: uppercase;
+      color: var(--gold);
+    }
+    .meal-banner.dinner .meal-banner-text { color: #e8a0a0; }
+
+    .category-block { margin-bottom:56px; }
+    .category-title {
+      font-family:'Montserrat',sans-serif; font-size:.6rem;
+      letter-spacing:.4em; text-transform:uppercase; color:var(--gold);
+      border-bottom:1px solid var(--border); padding-bottom:10px; margin-bottom:28px;
+    }
+    .menu-item {
+      display:grid; grid-template-columns:1fr auto; gap:12px 20px;
+      padding:18px 0; border-bottom:1px solid rgba(201,168,76,.1);
+    }
+    .menu-item:last-child { border-bottom:none; }
+    .item-name { font-family:'Playfair Display',serif; font-size:1.15rem; color:var(--cream); }
+    .item-desc { font-style:italic; font-size:.9rem; color:var(--muted); grid-column:1; margin-top:4px; line-height:1.5; }
+    .item-price {
+      font-family:'Montserrat',sans-serif; font-size:.85rem; color:var(--gold);
+      font-weight:600; align-self:start; padding-top:4px; white-space:nowrap;
+    }
+
+    .live-indicator {
+      display:inline-flex; align-items:center; gap:6px;
+      font-family:'Montserrat',sans-serif; font-size:.55rem;
+      letter-spacing:.2em; text-transform:uppercase; color:var(--muted);
+      padding:20px 20px 0; justify-content:flex-end;
+    }
+    .live-dot {
+      width:6px; height:6px; border-radius:50%; background:#27ae60;
+      animation:pulse 2s ease-in-out infinite;
+    }
+    @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:.3;} }
+
+    /* Translation note */
+    .translation-note {
+      text-align: center;
+      padding: 12px;
+      font-family: 'Montserrat', sans-serif;
+      font-size: .55rem;
+      letter-spacing: .2em;
+      text-transform: uppercase;
+      color: var(--muted);
+      border-top: 1px solid var(--border);
+      margin-top: 40px;
+    }
+
+    footer {
+      text-align:center; padding:40px 20px;
+      border-top:1px solid var(--border);
+      font-family:'Montserrat',sans-serif; font-size:.6rem;
+      letter-spacing:.3em; text-transform:uppercase; color:var(--muted);
+    }
+    footer a { color:var(--gold); text-decoration:none; margin-left:16px; }
+
+    @keyframes fadeUp { from{opacity:0;transform:translateY(18px);} to{opacity:1;transform:translateY(0);} }
+    @keyframes fadeIn { from{opacity:0;} to{opacity:1;} }
+    @media(max-width:600px){ .menu-item{grid-template-columns:1fr;} }
+  </style>
+</head>
+<body>
+
+<!-- Google Translate hidden element (required by the widget) -->
+<div id="google_translate_element" style="display:none"></div>
+
+<header class="hero">
+  <div class="logo-ornament">
+    <span class="line"></span>
+    <svg viewBox="0 0 24 24"><path d="M11 9H9V2H7v7H5V2H3v7c0 2.12 1.66 3.84 3.75 3.97V22h2.5v-9.03C11.34 12.84 13 11.12 13 9V2h-2v7zm5-3v8h2.5v8H21V2c-2.76 0-5 2.24-5 4z"/></svg>
+    <span class="line r"></span>
+  </div>
+  <h1 class="restaurant-name">REDCLIFF</h1>
+  <p class="tagline">Restaurant &amp; Bar — Naivasha Kongoni</p>
+  <span class="date-badge" id="currentDate"></span>
+
+  <!-- MEAL PERIOD TOGGLE -->
+  <div class="meal-toggle-wrap">
+    <div class="meal-toggle">
+      <button class="meal-btn lunch active" id="lunchBtn" onclick="setMealPeriod('lunch')">
+        <svg viewBox="0 0 24 24"><path d="M6.76 4.84l-1.8-1.79-1.41 1.41 1.79 1.79 1.42-1.41zM4 10.5H1v2h3v-2zm9-9.95h-2V3.5h2V.55zm7.45 3.91l-1.41-1.41-1.79 1.79 1.41 1.41 1.79-1.79zM20 10.5v2h3v-2h-3zm-8-5c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6-2.69-6-6-6zm-1 16.95h2V19.5h-2v2.95zm-7.45-3.91l1.41 1.41 1.79-1.8-1.41-1.41-1.79 1.8z"/></svg>
+        Lunch
+      </button>
+      <div class="meal-divider"></div>
+      <button class="meal-btn dinner" id="dinnerBtn" onclick="setMealPeriod('dinner')">
+        <svg viewBox="0 0 24 24"><path d="M11.1 12.08C8.77 7.57 10.6 3.6 11.53 2c-6.27.99-8.28 7.3-6.56 11.9.1.28.22.56.35.83.01.04-.01.07-.04.09-.8.44-1.52 1.05-2.07 1.79-.01.01-.03.02-.04.03-.22.2-.37.45-.43.72-.16.73.16 1.49.77 1.94.4.3.88.46 1.36.46.1 0 .2-.01.3-.03l4.45-.9c.08-.02.14-.05.2-.08l.12-.07c.12-.07.23-.16.33-.26.53-.53.67-1.34.32-2l-1-.04c.16-.32.3-.65.42-.98zM21 8.5c0-.83-.34-1.58-.88-2.12C19.58 5.84 18.83 5.5 18 5.5s-1.58.34-2.12.88C15.34 6.92 15 7.67 15 8.5c0 1.86 1.27 3.43 3 3.87v8.13h2v-8.13c1.73-.44 3-2.01 3-3.87z"/></svg>
+        Dinner
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- Translation bar — powered by Google Translate (free) -->
+<div class="translate-bar" id="translateBar">
+  <span class="translate-label">Translate:</span>
+  <button class="lang-btn active" onclick="doTranslate('en',this)"><span class="flag">🇬🇧</span> English</button>
+  <button class="lang-btn" onclick="doTranslate('fr',this)"><span class="flag">🇫🇷</span> Français</button>
+  <button class="lang-btn" onclick="doTranslate('de',this)"><span class="flag">🇩🇪</span> Deutsch</button>
+  <button class="lang-btn" onclick="doTranslate('es',this)"><span class="flag">🇪🇸</span> Español</button>
+  <button class="lang-btn" onclick="doTranslate('zh-CN',this)"><span class="flag">🇨🇳</span> 中文</button>
+  <button class="lang-btn" onclick="doTranslate('ja',this)"><span class="flag">🇯🇵</span> 日本語</button>
+  <button class="lang-btn" onclick="doTranslate('ar',this)"><span class="flag">🇸🇦</span> العربية</button>
+  <button class="lang-btn" onclick="doTranslate('sw',this)"><span class="flag">🇰🇪</span> Kiswahili</button>
+  <button class="lang-btn" onclick="doTranslate('it',this)"><span class="flag">🇮🇹</span> Italiano</button>
+  <button class="lang-btn" onclick="doTranslate('pt',this)"><span class="flag">🇵🇹</span> Português</button>
+  <button class="lang-btn" onclick="doTranslate('ru',this)"><span class="flag">🇷🇺</span> Русский</button>
+  <button class="lang-btn" onclick="doTranslate('hi',this)"><span class="flag">🇮🇳</span> हिन्दी</button>
+</div>
+
+<!-- Live indicator -->
+<div style="text-align:right; max-width:960px; margin:0 auto;">
+  <span class="live-indicator"><span class="live-dot"></span> Live Menu</span>
+</div>
+
+<nav class="section-nav" id="sectionNav">
+  <div id="loadingState"><div class="spinner"></div>Loading menu…</div>
+</nav>
+
+<main id="menuMain"></main>
+
+<footer>
+  &copy; Redcliff Restaurant &amp; Bar
+  <a href="admin.html">Staff Login</a>
+</footer>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getFirestore, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey:            "AIzaSyDcDGxVdcVIJfW1Tij8AHw4P2KmVT4IUsM",
+    authDomain:        "nkl-menu.firebaseapp.com",
+    projectId:         "nkl-menu",
+    storageBucket:     "nkl-menu.firebasestorage.app",
+    messagingSenderId: "997554521363",
+    appId:             "1:997554521363:web:8fbea8e147e4562e1d46e6"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db  = getFirestore(app);
+
+  document.getElementById('currentDate').textContent =
+    new Date().toLocaleDateString('en-KE',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+
+  let activeSection = null;
+  let currentMealPeriod = 'lunch';
+
+  // ── MEAL PERIOD TOGGLE ────────────────────────────────────────────────
+  window.setMealPeriod = function(period) {
+    currentMealPeriod = period;
+    document.getElementById('lunchBtn').classList.toggle('active', period === 'lunch');
+    document.getElementById('dinnerBtn').classList.toggle('active', period === 'dinner');
+    if (menuData) renderMenu(menuData);
+  };
+
+  // ── GOOGLE TRANSLATE — 100% FREE ─────────────────────────────────────
+  // doTranslate() fires when a flag button is clicked.
+  // It uses the Google Translate cookie mechanism (same as the standard widget).
+  window.doTranslate = function(langCode, btn) {
+    // Update active button styling
+    document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+
+    if (langCode === 'en') {
+      // Reset to English — remove the Google Translate cookie and reload
+      document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+      document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=' + location.hostname;
+      location.reload();
+      return;
+    }
+
+    // Set the Google Translate cookie to trigger translation
+    const val = '/en/' + langCode;
+    document.cookie = 'googtrans=' + val + '; path=/';
+    document.cookie = 'googtrans=' + val + '; path=/; domain=' + location.hostname;
+
+    // Trigger translation via the hidden widget's select element
+    const select = document.querySelector('.goog-te-combo');
+    if (select) {
+      select.value = langCode;
+      select.dispatchEvent(new Event('change'));
+    } else {
+      // Widget not ready yet — wait and retry
+      setTimeout(() => {
+        const s = document.querySelector('.goog-te-combo');
+        if (s) { s.value = langCode; s.dispatchEvent(new Event('change')); }
+      }, 800);
+    }
+  };
+
+  // ── FIREBASE LISTENER ─────────────────────────────────────────────────
+  let menuData   = null;
+  let hiddenItems = {};
+  let buffetOn   = true;
+
+  onSnapshot(doc(db, 'menu', 'current'), (snap) => {
+    const data = snap.exists() ? snap.data() : null;
+    menuData    = data?.sections   || getDefaultMenu();
+    hiddenItems = data?.hiddenItems || {};
+    buffetOn    = data?.buffetOn !== undefined ? data.buffetOn : true;
+    // Sync meal period set by admin
+    if (data && data.mealPeriod && data.mealPeriod !== currentMealPeriod) {
+      currentMealPeriod = data.mealPeriod;
+      document.getElementById('lunchBtn').classList.toggle('active', currentMealPeriod === 'lunch');
+      document.getElementById('dinnerBtn').classList.toggle('active', currentMealPeriod === 'dinner');
+    }
+    renderMenu(menuData);
+  }, (err) => {
+    console.error('Firebase error:', err);
+    renderMenu(getDefaultMenu());
+  });
+
+  // ── RENDER ────────────────────────────────────────────────────────────
+  function renderMenu(menu) {
+    const nav  = document.getElementById('sectionNav');
+    const main = document.getElementById('menuMain');
+    nav.innerHTML  = '';
+    main.innerHTML = '';
+
+    // Filter out buffet if chef toggled it off
+    const filteredMenu = {};
+    Object.entries(menu).forEach(([key, sec]) => {
+      if (key === 'buffet' && !buffetOn) return; // hide buffet section
+      filteredMenu[key] = sec;
+    });
+
+    const keys = Object.keys(filteredMenu);
+    if (!activeSection || !filteredMenu[activeSection]) activeSection = keys[0];
+
+    // Meal period banner HTML
+    const isLunch = currentMealPeriod === 'lunch';
+    const mealBannerHTML = `
+      <div class="meal-banner ${isLunch ? '' : 'dinner'}">
+        <svg viewBox="0 0 24 24">${isLunch
+          ? '<path d="M6.76 4.84l-1.8-1.79-1.41 1.41 1.79 1.79 1.42-1.41zM4 10.5H1v2h3v-2zm9-9.95h-2V3.5h2V.55zm7.45 3.91l-1.41-1.41-1.79 1.79 1.41 1.41 1.79-1.79zM20 10.5v2h3v-2h-3zm-8-5c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6-2.69-6-6-6zm-1 16.95h2V19.5h-2v2.95zm-7.45-3.91l1.41 1.41 1.79-1.8-1.41-1.41-1.79 1.8z"/>'
+          : '<path d="M11.1 12.08C8.77 7.57 10.6 3.6 11.53 2c-6.27.99-8.28 7.3-6.56 11.9.1.28.22.56.35.83.01.04-.01.07-.04.09-.8.44-1.52 1.05-2.07 1.79-.01.01-.03.02-.04.03-.22.2-.37.45-.43.72-.16.73.16 1.49.77 1.94.4.3.88.46 1.36.46.1 0 .2-.01.3-.03l4.45-.9c.08-.02.14-.05.2-.08l.12-.07c.12-.07.23-.16.33-.26.53-.53.67-1.34.32-2l-1-.04c.16-.32.3-.65.42-.98zM21 8.5c0-.83-.34-1.58-.88-2.12C19.58 5.84 18.83 5.5 18 5.5s-1.58.34-2.12.88C15.34 6.92 15 7.67 15 8.5c0 1.86 1.27 3.43 3 3.87v8.13h2v-8.13c1.73-.44 3-2.01 3-3.87z"/>'
+        }</svg>
+        <span class="meal-banner-text">${isLunch ? '☀️ Lunch Service — 12:00 to 15:00' : '🌙 Dinner Service — 18:00 to 22:00'}</span>
+      </div>`;
+
+    keys.forEach((key) => {
+      const sec = filteredMenu[key];
+
+      const btn = document.createElement('button');
+      btn.className = 'nav-btn' + (key === activeSection ? ' active' : '');
+      btn.textContent = sec.label;
+      btn.onclick = () => {
+        activeSection = key;
+        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.menu-section').forEach(s => s.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById('sec-' + key).classList.add('active');
+      };
+      nav.appendChild(btn);
+
+      const secEl = document.createElement('div');
+      secEl.className = 'menu-section' + (key === activeSection ? ' active' : '');
+      secEl.id = 'sec-' + key;
+
+      let html = `<div class="section-header">
+        <h2>${sec.label}</h2>
+        <div class="divider"><span></span><i>✦</i><span></span></div>
+      </div>`;
+
+      // Meal period banner per section
+      html += mealBannerHTML;
+
+      if (sec.note) {
+        html += `<div class="buffet-note"><p>${sec.note}
+          ${sec.price ? `<span class="price-hl">${sec.price}</span>` : ''}</p></div>`;
+      }
+
+      const cats = sec.categories || {};
+      Object.entries(cats).forEach(([catName, items]) => {
+        // Filter hidden items for this section/category
+        const visibleItems = (items || []).filter((item, idx) => {
+          const hiddenKey = `${key}::${catName}::${idx}`;
+          return !hiddenItems[hiddenKey];
+        });
+        if (visibleItems.length === 0) return; // skip empty categories
+
+        html += `<div class="category-block">
+          <div class="category-title">${catName}</div>`;
+        visibleItems.forEach(item => {
+          html += `<div class="menu-item">
+            <span class="item-name">${item.name}</span>
+            ${item.price ? `<span class="item-price">${item.price}</span>` : ''}
+            ${item.desc  ? `<span class="item-desc">${item.desc}</span>`   : ''}
+          </div>`;
+        });
+        html += `</div>`;
+      });
+
+      secEl.innerHTML = html;
+      main.appendChild(secEl);
+    });
+  }
+
+  function getDefaultMenu() {
+    return {
+      buffet: {
+        label: "Buffet",
+        note: "Our daily rotating buffet — freshly prepared each morning. Served 12:00 – 15:00.",
+        price: "KES 1,500 per person",
+        categories: {
+          "Soups & Starters": [
+            { name:"Soup of the Day", desc:"Ask your server for today's selection", price:"" },
+            { name:"Garden Salad Bar", desc:"Seasonal greens, cherry tomatoes, house dressings", price:"" }
+          ],
+          "Main Course": [
+            { name:"Grilled Tilapia", desc:"Lemon butter sauce, sautéed vegetables", price:"" },
+            { name:"Beef Stew", desc:"Slow-cooked with root vegetables in a rich jus", price:"" },
+            { name:"Vegetable Curry", desc:"Coconut milk base, seasonal vegetables, basmati", price:"" }
+          ],
+          "Accompaniments": [
+            { name:"Ugali", desc:"Traditional maize meal", price:"" },
+            { name:"Steamed Rice", desc:"Fragrant long-grain basmati", price:"" }
+          ],
+          "Desserts": [
+            { name:"Seasonal Fruit Platter", desc:"Fresh-cut fruits of the day", price:"" },
+            { name:"Coconut Pudding", desc:"Chilled custard, passion fruit coulis", price:"" }
+          ]
+        }
+      },
+      alaCarte: {
+        label: "À La Carte",
+        categories: {
+          "Starters": [
+            { name:"Prawn Cocktail", desc:"Tiger prawns, Marie Rose, crispy lettuce", price:"KES 950" },
+            { name:"Mushroom Bruschetta", desc:"Wild mushrooms, garlic, thyme, sourdough", price:"KES 750" }
+          ],
+          "Mains": [
+            { name:"Grilled Ribeye", desc:"300g grain-fed ribeye, peppercorn sauce, fries", price:"KES 3,200" },
+            { name:"Pan-Seared Salmon", desc:"Beurre blanc, asparagus, baby potatoes", price:"KES 2,400" },
+            { name:"Chicken Supreme", desc:"Free-range breast, wild mushroom cream, truffle fries", price:"KES 1,800" }
+          ],
+          "Desserts": [
+            { name:"Chocolate Fondant", desc:"Warm cake, vanilla ice cream, raspberry coulis", price:"KES 800" },
+            { name:"Crème Brûlée", desc:"Classic vanilla custard, caramelised sugar", price:"KES 700" }
+          ]
+        }
+      },
+      bar: {
+        label: "Redcliff Bar",
+        categories: {
+          "Cocktails": [
+            { name:"Redcliff Sour", desc:"Bourbon, fresh lemon, honey syrup, egg white", price:"KES 950" },
+            { name:"Nairobi Mule", desc:"Vodka, fresh ginger beer, lime, mint", price:"KES 850" },
+            { name:"Passion Martini", desc:"Vodka, passion fruit, vanilla, sparkling wine float", price:"KES 1,100" }
+          ],
+          "Wines by the Glass": [
+            { name:"House Red", desc:"Shiraz, South Africa", price:"KES 700" },
+            { name:"House White", desc:"Sauvignon Blanc, South Africa", price:"KES 700" }
+          ],
+          "Beers": [
+            { name:"Tusker Lager", desc:"Kenya's classic 500ml", price:"KES 350" },
+            { name:"White Cap", desc:"Crisp Kenyan lager 500ml", price:"KES 350" }
+          ],
+          "Non-Alcoholic": [
+            { name:"Fresh Juice", desc:"Passion, mango, watermelon or mix", price:"KES 350" },
+            { name:"Virgin Mojito", desc:"Lime, mint, soda, cane sugar", price:"KES 450" }
+          ]
+        }
+      }
+    };
+  }
+</script>
+  <!-- ── GOOGLE TRANSLATE WIDGET (free, no API key needed) ── -->
+  <script>
+    // Initialise the hidden Google Translate widget
+    function googleTranslateElementInit() {
+      new google.translate.TranslateElement(
+        { pageLanguage: 'en', autoDisplay: false },
+        'google_translate_element'
+      );
+    }
+  </script>
+  <script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+</body>
+</html>
